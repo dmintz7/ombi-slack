@@ -6,8 +6,8 @@ logger = logging.getLogger('root')
 
 class Bot(object):
 	def __init__ (self):
-		self.slack_client = SlackClient('xoxb-410443904512-723195084133-aeAXFYMCbslnXxoXujOdG8Yu')
-		self.bot_name = 'requests'
+		self.slack_client = SlackClient(os.environ['slack_api_key'])
+		self.bot_name = os.environ['slack_bot']
 		self.bot_id = self.get_bot_id()
 		
 		if self.bot_id is None:
@@ -48,7 +48,7 @@ class Command(object):
 	def handle_command(self, user, text, date_sent):
 		response = ""
 		try:
-			if user == 'requests':
+			if user == os.environ['slack_bot']:
 				try:
 					logger.info("Ombi Command Found")
 					clean_text = text.replace("The user '","").replace("' has requested a ",";").replace(" at Request Date: ", ";").replace(": ",";").split(";")
@@ -121,7 +121,7 @@ class Event:
 				except:
 					user = event['username']
 			except:
-				user = 'requests'
+				user = os.environ['slack_bot']
 				
 			try:
 				text = event['text'].split(self.bot.bot_id)[1].strip()

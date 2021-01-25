@@ -20,7 +20,7 @@ def slack_bot(json_text):
 		logger.info("Message Update Sent")
 
 def search_movie_radarr(tmdb_id):
-	url = "http://robby.skynet.com:7878/radarr/api/movie?apikey=912d3b87e05c4c12bfc115a9fad9f793"
+	url = os.environ['radarr_host'] + "api/movie?apikey=" + os.environ['radarr_api']
 	response = requests.get(url)
 	response = json.loads(response.text)
 
@@ -30,13 +30,13 @@ def search_movie_radarr(tmdb_id):
 			radarr_id = movie['id']
 			break
 
-	if radarr_id != 0:
-		data = "{name: 'MoviesSearch', movieIds : [%s]}" % radarr_id
-		response = requests.post('http://robby.skynet.com:7878/radarr/api/command', data=data, headers = {'Content-Type': 'application/json', 'X-Api-Key': '912d3b87e05c4c12bfc115a9fad9f793'})
-		logger.info("Starting search for movie in Radarr")
-		return json.loads(response.text)
-	else:
-		return False
+	# if radarr_id != 0:
+		# data = "{name: 'MoviesSearch', movieIds : [%s]}" % radarr_id
+		# response = requests.post(os.environ['radarr_host'] + 'api/command', data=data, headers = {'Content-Type': 'application/json', 'X-Api-Key': os.environ['radarr_api']})
+		# logger.info("Starting search for movie in Radarr")
+		# return json.loads(response.text)
+	# else:
+		# return False
 
 def process_ombi(json_text):
 	data = json_text['original_message']['attachments']

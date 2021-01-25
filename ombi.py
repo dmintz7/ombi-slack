@@ -65,7 +65,7 @@ def get_info(response):
 
 def get_requested():
 	try:
-		ombi_API = API('http://joi.skynet.com:5000/requests/api/v1', 'c78dd00f34c24ba08e6531523b3faf77', 'speedyflipper')
+		ombi_API = API(os.environ['ombi_host'], os.environ['ombi_api'], os.environ['ombi_user'])
 		final_list = []
 		tv_request = ombi_API.get_tv_request()
 		movie_request = ombi_API.get_movie_request()
@@ -163,7 +163,7 @@ def get_unapproved():
 		logger.error("Error Getting Unapproved - %s" % e)
 
 def approve_process(ombi_id, kind):
-	ombi_API = API('http://joi.skynet.com:5000/requests/api/v1', 'c78dd00f34c24ba08e6531523b3faf77', 'speedyflipper')
+	ombi_API = API(os.environ['ombi_host'], os.environ['ombi_api'], os.environ['ombi_user'])
 	if kind == "tv":
 		seasons = ombi_API.get_tv_child(ombi_id)[0]
 		#THIS APPROVES ALL, CAN YOU LIMIT  THE APPROVAL TO SPECIFIC SEASONS
@@ -177,7 +177,7 @@ def approve_process(ombi_id, kind):
 
 def request_media(request_info):
 	try:
-		ombi_API = API('http://joi.skynet.com:5000/requests/api/v1', 'c78dd00f34c24ba08e6531523b3faf77', 'speedyflipper')
+		ombi_API = API(os.environ['ombi_host'], os.environ['ombi_api'], os.environ['ombi_user'])
 		response = False
 		message = None
 	
@@ -187,7 +187,6 @@ def request_media(request_info):
 		if kind.upper() == "T":
 			kind = "tv"
 			response = ombi_API.request_tv(id)
-			logger.info(response)
 		elif kind.upper() == "M":
 			kind = "movie"
 			response = ombi_API.request_movie(id)
@@ -199,12 +198,13 @@ def request_media(request_info):
 				message = "This has been added to Ombi."
 		except:
 			message = "Error Adding to Ombi"
+
 		return (message, kind, id)
 	except:
 		logger.error("Error Requesting %s" % request_info)
 
 def search_movie(string):
-	tmdb.API_KEY = 'a41366ab753e5388ffcf31a63a6bbea8'
+	tmdb.API_KEY = os.environ['tmdb_api']
 	search = tmdb.Search()
 	search.movie(query=string)
 	if len(search.results) > 0:
@@ -212,35 +212,41 @@ def search_movie(string):
 			data = create_attachment("movie", s['id'], '%s (%s)' % (s['title'], s['release_date']), s['overview'], s['poster_path'], "request")
 			logger.info("Ombi Request for %s returned %s." % (string, data))
 			sendMessage("", data)
-		else:
-			logger.info("No Results Found")
-			sendMessage("No results found")
+	else:
+		logger.info("No Results Found")
+		sendMessage("No results found")
 def search_tv(string):
-	tvdb.KEYS.API_KEY = 'ECN2OVO4BCEO7ZPZ'
+	tvdb.KEYS.API_KEY = os.environ['tvdb_api']
 	search = tvdb.Search()
 	search.series(string)
 	try:
 		for s in search.series[:5]:
-			data = create_attachment("tv", s['id'], s['seriesName'], s['overview'], s['banner'], "request", Status=s['status'])
+			data = create_attachment("tv", s['id'], s['seriesName'], checkElement(s, 'overview'), checkElement(s, 'banner'), "request", Status=s['status'])
 			logger.info("Ombi Request for %s returned %s." % (string, data))
 			sendMessage("", data)
 	except:
 		logger.info("No Results Found")
 		sendMessage("No results found")
-		
+
+def checkElement(list, element):
+	try:
+		return list[element]
+	except:
+		return ""
+
 def sendMessage(response, attachments=None, update=False, ts=False):
 	try:
 		if response is None and isinstance(attachments, str):
 			response = attachments
 			attachments = None
 			
-		logger.info("Sending Message (%s) and Attachments (%s) to User (%s)" % (response, attachments, 'requests'))
+		logger.info("Sending Message (%s) and Attachments (%s) to User (%s)" % (response, attachments, os.environ['slack_bot']))
 
-		sc = SlackClient('xoxb-410443904512-723195084133-aeAXFYMCbslnXxoXujOdG8Yu')
+		sc = SlackClient(os.environ['slack_api_key'])
 		if update:
-			result = sc.api_call("chat.update", channel='DM2Q28P6D', text=response, as_user=False, ts=ts, attachments=json.dumps(attachments))
+			result = sc.api_call("chat.update", channel=os.environ['slack_channel'], text=response, as_user=False, ts=ts, attachments=json.dumps(attachments))
 		else:
-			result = sc.api_call("chat.postMessage", channel='DM2Q28P6D', text=response, as_user=False, attachments=json.dumps(attachments))
+			result = sc.api_call("chat.postMessage", channel=os.environ['slack_channel'], text=response, as_user=False, attachments=json.dumps(attachments))
 			
 		if str(result['ok']) == 'True':
 			return "success"

@@ -25,7 +25,7 @@ consoleHandler.setFormatter(formatter)
 logger.addHandler(consoleHandler)
 logging.getLogger("requests").setLevel(logging.WARNING)
 logger.setLevel("INFO")
-fileHandler = RotatingFileHandler('/mnt/Server/Scripts/ombi-slack/logs/ombi.log', maxBytes=1024 * 1024 * 2, backupCount=1)
+fileHandler = RotatingFileHandler('/app/logs/ombi.log', maxBytes=1024 * 1024 * 2, backupCount=1)
 fileHandler.setFormatter(formatter)
 logger.addHandler(fileHandler)
 
@@ -35,7 +35,7 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 
-@app.route('/ombi-slack', methods=['POST'])
+@app.route(os.environ['web_root'], methods=['POST'])
 def api_command():
 	json_text = json.loads(request.form["payload"])
 	p4 = Process(target=api.slack_bot, args=[json_text])
@@ -47,4 +47,4 @@ if __name__ == "__main__":
 	p3.start()
 
 	logger.info("Starting Ombi Slack Server")
-	app.run(host= '0.0.0.0', port=8750)
+	app.run(host= '0.0.0.0', port=80)

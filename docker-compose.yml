@@ -1,0 +1,23 @@
+version: '2'
+services:
+  ombi-slack:
+    container_name: ombi-slack
+    image: dmintz7/ombi-slack
+    build: .
+    ports:
+      - 8750:80
+    environment:
+      - web_root=/
+      - slack_api_key=
+      - slack_bot=
+      - slack_channel=
+      - ombi_api=
+      - ombi_host=
+      - ombi_user=
+      - radarr_host=
+      - radarr_api=
+      - tmdb_api=
+      - tvdb_api=
+    volumes:
+      - /PATH/TO/LOG:/app/logs
+    restart: unless-stopped
