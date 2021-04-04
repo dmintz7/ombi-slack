@@ -51,8 +51,8 @@ class Command(object):
 			if user == os.environ['slack_bot']:
 				try:
 					logger.info("Ombi Command Found")
-					clean_text = text.replace("The user '","").replace("' has requested a ",";").replace(" at Request Date: ", ";").replace(": ",";").split(";")
-					test_title = "(".join(clean_text[2].split("(")[:-1])[:-1]
+					clean_text = text.replace("The user '","").replace("' has requested the ",";").replace(" '",";'").split(";")
+					test_title = clean_text[2][1:-1]
 					test_kind=clean_text[1].replace(" show","")
 					response = ombi.get_single_info(test_title, test_kind)
 				except Exception as e:
