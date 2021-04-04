@@ -140,11 +140,6 @@ def get_single_info(test_title, test_kind):
 				if to_approve == True:
 					data = create_attachment(kind, id, title, text, poster, "approve", Status=status, User=username, Date_Requested=date_requested, ombi_id=ombi_id)
 					break
-				elif kind == 'movie':
-					response = api.search_movie_radarr(id)
-					if not response:
-						time.sleep(60)
-						api.search_movie_radarr(id)
 		return data
 	except Exception as e:
 		logger.error("Error Getting Unapproved - %s" % e)

@@ -19,25 +19,6 @@ def slack_bot(json_text):
 		ombi.sendMessage("", data, True, ts)
 		logger.info("Message Update Sent")
 
-def search_movie_radarr(tmdb_id):
-	url = os.environ['radarr_host'] + "api/movie?apikey=" + os.environ['radarr_api']
-	response = requests.get(url)
-	response = json.loads(response.text)
-
-	radarr_id = 0
-	for movie in reversed(response):
-		if movie['tmdbId'] == int(tmdb_id):
-			radarr_id = movie['id']
-			break
-
-	# if radarr_id != 0:
-		# data = "{name: 'MoviesSearch', movieIds : [%s]}" % radarr_id
-		# response = requests.post(os.environ['radarr_host'] + 'api/command', data=data, headers = {'Content-Type': 'application/json', 'X-Api-Key': os.environ['radarr_api']})
-		# logger.info("Starting search for movie in Radarr")
-		# return json.loads(response.text)
-	# else:
-		# return False
-
 def process_ombi(json_text):
 	data = json_text['original_message']['attachments']
 	name = json_text['actions'][0]['name']
@@ -68,8 +49,7 @@ def process_ombi(json_text):
 			message = response['errorMessage']
 		else:
 			message = "This has not been approved due to an error."
-	
-	if kind == 'movie': search_movie_radarr(ombi_id)
+
 	message = re.sub('".*"', 'This', message)[:30]
 	data[0]['actions'][0]['text'] = message
 	return data
